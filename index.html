@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogStation — Offline Log Investigation Workstation</title>
+    <meta name="description" content="Investigate gigabytes of logs fast, locally, and completely offline.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+          darkMode: 'class',
+          theme: {
+            extend: {
+              colors: {
+                brand: '#3B82F6',
+                darkBg: '#0F1117',
+                cardBg: '#181B23',
+                borderCol: '#2A2E3D'
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-darkBg text-slate-200 font-sans antialiased min-h-screen flex flex-col justify-between">
+
+<!-- Navbar -->
+<header class="border-b border-borderCol py-4 px-6 md:px-12 flex justify-between items-center max-w-6xl w-full mx-auto">
+    <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold text-white tracking-tight">LogStation</span>
+        <span class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded font-mono">v0.1-beta</span>
+    </div>
+    <a href="#waitlist" class="text-sm font-medium text-slate-300 hover:text-white transition">Request Beta</a>
+</header>
+
+<!-- Hero Section -->
+<main class="max-w-4xl mx-auto px-6 py-16 text-center flex-grow flex flex-col items-center justify-center">
+
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-borderCol text-slate-400 text-xs font-mono mb-8">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        100% Offline • Local-First • Zero Telemetry
+    </div>
+
+    <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
+        Open gigabytes of Logcat in seconds.<br class="hidden sm:inline">
+        <span class="text-slate-400 font-normal">Directly on your machine.</span>
+    </h1>
+
+    <p class="text-lg md:text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed">
+        A desktop workstation designed for debugging complex Android incidents and massive traces. No cloud uploads, no third-party dependencies, and zero friction.
+    </p>
+
+    <!-- Waitlist Form -->
+    <div id="waitlist" class="w-full max-w-md bg-cardBg border border-borderCol p-3 rounded-xl shadow-2xl mb-16">
+        <!-- REPLACE THE ACTION ATTRIBUTE WITH YOUR FORMSPREE/TALLY ENDPOINT -->
+        <form action="https://formspree.io/f/TU-ENDPOINT-AQUI" method="POST" class="flex flex-col sm:flex-row gap-2">
+            <input
+                    type="email"
+                    name="email"
+                    required
+                    placeholder="developer@company.com"
+                    class="flex-1 bg-darkBg border border-borderCol text-slate-200 text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 font-mono transition"
+            >
+            <button
+                    type="submit"
+                    class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-5 py-3 rounded-lg transition whitespace-nowrap"
+            >
+                Join Beta Waitlist
+            </button>
+        </form>
+        <p class="text-xs text-slate-500 mt-2 text-left px-1">Zero spam. We will only notify you when the preview build is available.</p>
+    </div>
+
+    <!-- Feature Highlights -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left w-full mt-6">
+        <div class="p-6 bg-cardBg/50 border border-borderCol rounded-xl">
+            <h3 class="text-white font-semibold mb-2 flex items-center gap-2">
+                <span>🔒</span> Absolute Privacy
+            </h3>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Your diagnostic artifacts never leave your drive. Built to comply with strict NDAs, proprietary codebases, and offline air-gapped workflows.
+            </p>
+        </div>
+
+        <div class="p-6 bg-cardBg/50 border border-borderCol rounded-xl">
+            <h3 class="text-white font-semibold mb-2 flex items-center gap-2">
+                <span>⚡</span> Native Performance
+            </h3>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Powered by memory-mapped binary indexing and custom direct-rendered views for instant scrolling across multi-gigabyte files.
+            </p>
+        </div>
+
+        <div class="p-6 bg-cardBg/50 border border-borderCol rounded-xl">
+            <h3 class="text-white font-semibold mb-2 flex items-center gap-2">
+                <span>🔍</span> Forensic Exploration
+            </h3>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Fast column filters, surrounding context peek mode, chronological stream unification, bookmarks, and persistent investigation workspaces.
+            </p>
+        </div>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="border-t border-borderCol py-6 text-center text-xs text-slate-500">
+    <p>LogStation © 2026. Built for engineers analyzing local technical evidence.</p>
+</footer>
+
+</body>
+</html>
