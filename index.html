@@ -1,111 +1,381 @@
 ﻿<!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LogStation — Offline Log Investigation Workstation</title>
-    <meta name="description" content="Investigate gigabytes of logs fast, locally, and completely offline.">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-          darkMode: 'class',
-          theme: {
-            extend: {
-              colors: {
-                brand: '#3B82F6',
-                darkBg: '#0F1117',
-                cardBg: '#181B23',
-                borderCol: '#2A2E3D'
-              }
-            }
-          }
+    <meta name="description" content="Find the root cause hidden in your Android bugreports and logs. Fast, local, and completely offline.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0B0D10;
+            --surface: #12151A;
+            --surface-raised: #161A21;
+            --border: #232830;
+            --border-strong: #2E3540;
+            --accent: #00D9A3;
+            --accent-dim: #00D9A31A;
+            --text-primary: #E8EAED;
+            --text-secondary: #8B92A0;
+            --text-muted: #565D6B;
+            --mono: 'JetBrains Mono', ui-monospace, monospace;
+            --sans: 'Inter', -apple-system, sans-serif;
         }
-    </script>
-</head>
-<body class="bg-darkBg text-slate-200 font-sans antialiased min-h-screen flex flex-col justify-between">
 
-<!-- Navbar -->
-<header class="border-b border-borderCol py-4 px-6 md:px-12 flex justify-between items-center max-w-6xl w-full mx-auto">
-    <div class="flex items-center space-x-3">
-        <span class="text-xl font-bold text-white tracking-tight">LogStation</span>
-        <span class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded font-mono">v0.1-beta</span>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: var(--sans);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Header ---------- */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 18px 24px;
+        }
+        .header-inner {
+            max-width: 960px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-family: var(--mono);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo .prompt { color: var(--accent); }
+        .version-tag {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--accent);
+            background: var(--accent-dim);
+            border: 1px solid #00D9A340;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        /* ---------- Main ---------- */
+        main {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 72px 24px 96px;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        .statusline {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 32px;
+        }
+        .statusline .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: inline-block;
+        }
+        .statusline .sep { color: var(--border-strong); }
+
+        h1 {
+            font-family: var(--mono);
+            font-size: clamp(30px, 5vw, 46px);
+            font-weight: 600;
+            line-height: 1.25;
+            letter-spacing: -0.01em;
+            margin-bottom: 22px;
+        }
+        h1 .dim { color: var(--text-secondary); font-weight: 400; }
+
+        .subhead {
+            font-size: 17px;
+            line-height: 1.65;
+            color: var(--text-secondary);
+            max-width: 560px;
+            margin-bottom: 40px;
+        }
+        .subhead code {
+            font-family: var(--mono);
+            font-size: 15px;
+            color: var(--text-primary);
+            background: var(--surface-raised);
+            border: 1px solid var(--border);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        /* ---------- Waitlist ---------- */
+        .waitlist {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 6px;
+            max-width: 460px;
+            margin-bottom: 56px;
+        }
+        .waitlist form {
+            display: flex;
+            gap: 6px;
+        }
+        .waitlist input[type="email"] {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: var(--mono);
+            font-size: 13px;
+            border-radius: 6px;
+            padding: 12px 14px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .waitlist input[type="email"]::placeholder { color: var(--text-muted); }
+        .waitlist input[type="email"]:focus { border-color: var(--accent); }
+        .waitlist button {
+            background: var(--accent);
+            color: #04140F;
+            font-family: var(--sans);
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 18px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: opacity 0.15s;
+        }
+        .waitlist button:hover { opacity: 0.88; }
+        .waitlist .fineprint {
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 8px 10px 4px;
+        }
+
+        /* ---------- Terminal mockup (signature element) ---------- */
+        .terminal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 64px;
+        }
+        .terminal-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-raised);
+        }
+        .terminal-bar .tab {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .terminal-bar .tab.active { color: var(--text-primary); }
+        .terminal-bar .tab .badge {
+            font-size: 10px;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+        .terminal-body {
+            font-family: var(--mono);
+            font-size: 12.5px;
+            line-height: 2;
+            padding: 16px 18px;
+            overflow-x: auto;
+        }
+        .log-row {
+            display: grid;
+            grid-template-columns: 128px 44px 1fr;
+            gap: 14px;
+            white-space: nowrap;
+        }
+        .log-row .ts { color: var(--text-muted); }
+        .log-row .lvl { font-weight: 600; }
+        .log-row .lvl.E { color: #F0997B; }
+        .log-row .lvl.W { color: #FAC775; }
+        .log-row .lvl.I { color: var(--text-secondary); }
+        .log-row .msg { color: var(--text-secondary); }
+        .log-row .msg .hl {
+            color: #04140F;
+            background: var(--accent);
+            padding: 0 3px;
+            border-radius: 2px;
+        }
+        .log-row.pinned { background: var(--accent-dim); margin: 0 -18px; padding: 0 18px; }
+        .log-row.pinned .msg { color: var(--text-primary); }
+
+        /* ---------- Feature rows ---------- */
+        .features {
+            display: flex;
+            flex-direction: column;
+        }
+        .feature-row {
+            display: flex;
+            gap: 16px;
+            padding: 22px 0;
+            border-top: 1px solid var(--border);
+        }
+        .feature-row:last-child { border-bottom: 1px solid var(--border); }
+        .feature-icon {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+        .feature-text h3 {
+            font-size: 14.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .feature-text p {
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .roadmap-note {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            max-width: 620px;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px dashed var(--border);
+        }
+        .roadmap-note code {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 24px;
+            text-align: center;
+        }
+        footer p {
+            font-family: var(--mono);
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 560px) {
+            .log-row { grid-template-columns: 92px 32px 1fr; font-size: 11px; }
+            .waitlist form { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <div class="logo"><span class="prompt">&gt;</span>LogStation<span class="version-tag">v0.1-beta</span></div>
     </div>
-    <a href="#waitlist" class="text-sm font-medium text-slate-300 hover:text-white transition">Request Beta</a>
 </header>
 
-<!-- Hero Section -->
-<main class="max-w-4xl mx-auto px-6 py-16 text-center flex-grow flex flex-col items-center justify-center">
-
-    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-borderCol text-slate-400 text-xs font-mono mb-8">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        100% Offline • Local-First • Zero Telemetry
+<main>
+    <div class="statusline">
+        <span class="dot"></span>OFFLINE <span class="sep">/</span> LOCAL-FIRST <span class="sep">/</span> ZERO TELEMETRY
     </div>
 
-    <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
-        Open gigabytes of Logcat in seconds.<br class="hidden sm:inline">
-        <span class="text-slate-400 font-normal">Directly on your machine.</span>
-    </h1>
+    <h1>Find the root cause.<br><span class="dim">Not lost in gigabytes of logs.</span></h1>
 
-    <p class="text-lg md:text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed">
-        A desktop workstation designed for debugging complex Android incidents and massive traces. No cloud uploads, no third-party dependencies, and zero friction.
+    <p class="subhead">
+        A desktop workstation built to investigate Android bugreports and <code>Logcat</code> exports —
+        without uploading a single byte to the cloud. No servers, no third parties, no telemetry.
     </p>
 
-    <!-- Waitlist Form -->
-    <div id="waitlist" class="w-full max-w-md bg-cardBg border border-borderCol p-3 rounded-xl shadow-2xl mb-16">
-        <!-- REPLACE THE ACTION ATTRIBUTE WITH YOUR FORMSPREE/TALLY ENDPOINT -->
-        <form action="https://formspree.io/f/xzepjllk" method="POST" class="flex flex-col sm:flex-row gap-2">
-            <input
-                    type="email"
-                    name="email"
-                    required
-                    placeholder="developer@company.com"
-                    class="flex-1 bg-darkBg border border-borderCol text-slate-200 text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 font-mono transition"
-            >
-            <button
-                    type="submit"
-                    class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-5 py-3 rounded-lg transition whitespace-nowrap"
-            >
-                Join Beta Waitlist
-            </button>
+    <div class="waitlist" id="waitlist">
+        <form action="https://formspree.io/f/xzepjllk" method="POST">
+            <input type="email" name="email" required placeholder="developer@company.com">
+            <button type="submit">Join beta waitlist</button>
         </form>
-        <p class="text-xs text-slate-500 mt-2 text-left px-1">Zero spam. We will only notify you when the preview build is available.</p>
+        <p class="fineprint">Zero spam. We'll only notify you when the preview build is available.</p>
     </div>
 
-    <!-- Feature Highlights -->
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left w-full mt-6">
-        <div class="p-6 bg-cardBg/50 border border-borderCol rounded-xl">
-            <h3 class="text-white font-semibold mb-2 flex items-center gap-2">
-                <span>🔒</span> Absolute Privacy
-            </h3>
-            <p class="text-sm text-slate-400 leading-relaxed">
-                Your diagnostic artifacts never leave your drive. Built to comply with strict NDAs, proprietary codebases, and offline air-gapped workflows.
-            </p>
+    <div class="terminal">
+        <div class="terminal-bar">
+            <span class="tab active">bugreport-pixel8-2026-08-19.txt <span class="badge">142k lines</span></span>
         </div>
-
-        <div class="p-6 bg-cardBg/50 border border-borderCol rounded-xl">
-            <h3 class="text-white font-semibold mb-2 flex items-center gap-2">
-                <span>⚡</span> Native Performance
-            </h3>
-            <p class="text-sm text-slate-400 leading-relaxed">
-                Powered by memory-mapped binary indexing and custom direct-rendered views for instant scrolling across multi-gigabyte files.
-            </p>
+        <div class="terminal-body">
+            <div class="log-row"><span class="ts">08-19 14:02:11.884</span><span class="lvl I">I</span><span class="msg">ActivityManager: Displayed com.app.checkout/.PaymentActivity</span></div>
+            <div class="log-row"><span class="ts">08-19 14:02:12.031</span><span class="lvl W">W</span><span class="msg">NetworkScheduler: job 4471 exceeded deadline, rescheduling</span></div>
+            <div class="log-row pinned"><span class="ts">08-19 14:02:12.190</span><span class="lvl E">E</span><span class="msg">AndroidRuntime: FATAL EXCEPTION: <span class="hl">NullPointerException</span> at PaymentActivity.onResume</span></div>
+            <div class="log-row"><span class="ts">08-19 14:02:12.191</span><span class="lvl I">I</span><span class="msg">ActivityManager: Process com.app.checkout (pid 8842) has died</span></div>
+            <div class="log-row"><span class="ts">08-19 14:02:12.204</span><span class="lvl I">I</span><span class="msg">dumpstate: dumpsys activity broadcasts --proto</span></div>
         </div>
+    </div>
 
-        <div class="p-6 bg-cardBg/50 border border-borderCol rounded-xl">
-            <h3 class="text-white font-semibold mb-2 flex items-center gap-2">
-                <span>🔍</span> Forensic Exploration
-            </h3>
-            <p class="text-sm text-slate-400 leading-relaxed">
-                Fast column filters, surrounding context peek mode, chronological stream unification, bookmarks, and persistent investigation workspaces.
-            </p>
+    <div class="features">
+        <div class="feature-row">
+            <div class="feature-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>
+            </div>
+            <div class="feature-text">
+                <h3>Absolute privacy</h3>
+                <p>Bugreports and logs never leave your drive. Built to comply with strict NDAs, proprietary codebases, and air-gapped workflows.</p>
+            </div>
         </div>
-    </section>
+        <div class="feature-row">
+            <div class="feature-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2 3 14h8l-1 8 10-12h-8l1-8Z"/></svg>
+            </div>
+            <div class="feature-text">
+                <h3>Native performance</h3>
+                <p>Memory-mapped binary indexing and direct-rendered views keep scrolling instant, even across multi-gigabyte files.</p>
+            </div>
+        </div>
+        <div class="feature-row">
+            <div class="feature-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            <div class="feature-text">
+                <h3>Forensic exploration</h3>
+                <p>Column filters, context peek mode, chronological stream unification, bookmarks, and persistent investigation workspaces.</p>
+            </div>
+        </div>
+    </div>
 
+    <p class="roadmap-note">
+        Built around the artifact engineers actually have on hand: the full Android bugreport, not just an isolated <code>Logcat</code> export.
+        Starting with a deeply polished Logcat investigation core, extending next to the complete bugreport container.
+    </p>
 </main>
 
-<!-- Footer -->
-<footer class="border-t border-borderCol py-6 text-center text-xs text-slate-500">
-    <p>LogStation © 2026. Built for engineers analyzing local technical evidence.</p>
+<footer>
+    <p>LogStation © 2026 — built for engineers analyzing local technical evidence.</p>
 </footer>
 
 </body>
